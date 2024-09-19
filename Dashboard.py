@@ -292,14 +292,45 @@ def load_students(self):
             self.status_label.config(text="Aucun fichier sélectionné")
             
 def calculate_report_card(self, df, coefficients):
+        """
+        Calcule les résultats finaux des étudiants en fonction des notes et des coefficients
+        """
+        #Multiplier les notes par les coefficients
+        for matiere, coef in coefficients.items():
+            if matiere in df.columns:
+                df[matiere] = df[matiere] * coef
+        
+        # Calculer le total pour chaque étudiant
         df['Total'] = df.apply(lambda row: sum(row[course] * coefficients[course] for course in coefficients), axis=1)
+        
+        #Calculer la moyenne pour chaque étudiant
         df['Moyenne'] = df['Total'] / sum(coefficients.values())
+   
+        # df['Total'] = df[list(coefficients.keys())].sum(axis=1)
+        # df['Moyenne'] = df['Total'] / sum(coefficients.values())
+
+        # Autre methode
+        # Attribuer une mention selon la moyenne
+        # conditions = [
+        #     (df['Moyenne'] >= 16),
+        #     (df['Moyenne'] >= 14),
+        #     (df['Moyenne'] >= 12),
+        #     (df['Moyenne'] >= 10),
+        #     (df['Moyenne'] < 10)
+        # ]
+        # mentions = ['Très bien', 'Bien', 'Assez bien', 'Passable', 'Échec']
+        # df['Mention'] = pd.cut(df['Moyenne'], bins=[-float('inf'), 10, 12, 14, 16, float('inf')], labels=mentions)
+
+    
+        # Attribuer une mention selon la moyenne
+        df['Mention'] = df['Moyenne'].apply(lambda x: 'Excellent' if x >= 16 else 'Très bien' if x >= 14 else 'Bien' if x >= 12 else 'Assez bien' if x >= 10 else 'Insuffisant')
+        
         return df
 
 
-    # def generate_excel_report(self, etudiant):
-    #     # Code pour générer le rapport Excel pour l'étudiant
-    #     pass
+# def generate_excel_report(self, etudiant):
+# # Code pour générer le rapport Excel pour l'étudiant
+#     pass
     
 def generate_excel_report(self, etudiant):
     file_path = os.path.join(output_dir, f'{student_name}.xlsx')
